@@ -11,6 +11,8 @@ class Product(models.Model):
     collection = models.ForeignKey('Collection', on_delete=models.PROTECT)
     promotions = models.ManyToManyField('Promotion')
 
+    # def __str__(self):
+    #     return f'{self.title} - {self.price}'
 
 class Customer(models.Model):
 
