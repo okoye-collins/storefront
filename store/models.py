@@ -1,18 +1,26 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField()
     description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    inventory = models.IntegerField()
+    price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(1)]
+        )
+    inventory = models.IntegerField(validators=[MinValueValidator(1)])
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey('Collection', on_delete=models.PROTECT)
-    promotions = models.ManyToManyField('Promotion')
-
-    # def __str__(self):
-    #     return f'{self.title} - {self.price}'
+    promotions = models.ManyToManyField('Promotion', blank=True)
+    
+    def __str__(self) -> str:
+        return self.title
+    
+    class Meta:
+        ordering = ['title']
 
 class Customer(models.Model):
 
@@ -34,6 +42,9 @@ class Customer(models.Model):
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
     
+    def __str__(self) -> str:
+        return f'{self.first_name} {self.last_name}'
+    
 
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
@@ -50,6 +61,9 @@ class Order(models.Model):
     place_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_CHOICES, default=PAYMENT_STATUS_PENDING)
+    
+    def __str__(self) -> str:
+        return f'{self.customer}'
 
 
 class Address(models.Model):
@@ -62,6 +76,12 @@ class Address(models.Model):
 class Collection(models.Model):
     title = models.CharField(max_length=255)
     featured_product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='+')
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ['title']
 
 
 class OrderItem(models.Model):
